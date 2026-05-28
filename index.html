@@ -4,495 +4,387 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gorillat 4K Share</title>
-    
-    <!-- Tailwind CSS pour le design -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Phosphor Icons pour les icônes (optimisé pour ce format) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
-    <!-- React & ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    
-    <!-- Babel (Permet à ton navigateur de comprendre React directement) -->
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-
-    <!-- Firebase (Version compatible avec un fichier unique) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-
     <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0a; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background: linear-gradient(135deg, #22c55e, #16a34a); padding: 30px; border-radius: 15px; margin-bottom: 30px; text-align: center; }
+        h1 { font-size: 2.5rem; font-weight: bold; margin-bottom: 5px; }
+        .subtitle { font-size: 0.9rem; opacity: 0.9; }
+        section { background: #1a1a1a; border: 1px solid #333; border-radius: 15px; padding: 30px; margin-bottom: 30px; }
+        h2 { font-size: 1.8rem; margin-bottom: 20px; color: #22c55e; }
+        .upload-box { border: 2px dashed #22c55e; border-radius: 15px; padding: 50px 20px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(34, 197, 94, 0.05); }
+        .upload-box:hover { border-color: #16a34a; background: rgba(34, 197, 94, 0.1); }
+        .upload-box.dragover { border-color: #4ade80; background: rgba(74, 222, 128, 0.15); }
+        .icon-big { font-size: 3rem; margin-bottom: 15px; }
+        input[type="text"], input[type="file"] { width: 100%; padding: 12px; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; color: #fff; margin-bottom: 15px; }
+        input[type="text"]:focus { outline: none; border-color: #22c55e; }
+        input[type="file"] { display: none; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+        button { padding: 12px 24px; background: #22c55e; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        button:hover { background: #16a34a; transform: translateY(-2px); }
+        button:disabled { background: #666; cursor: not-allowed; transform: none; }
+        .btn-secondary { background: #444; color: #fff; }
+        .btn-secondary:hover { background: #555; }
+        .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .video-card { background: #0a0a0a; border: 1px solid #333; border-radius: 10px; padding: 20px; cursor: pointer; transition: all 0.3s; }
+        .video-card:hover { border-color: #22c55e; transform: translateY(-5px); }
+        .video-card h3 { font-size: 1.1rem; margin-bottom: 10px; }
+        .video-meta { font-size: 0.9rem; color: #999; margin: 5px 0; }
+        .badge { display: inline-block; background: #22c55e; color: #000; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .badge.blue { background: #3b82f6; color: #fff; }
+        .badge.green { background: #22c55e; color: #000; }
+        .progress { background: #333; height: 8px; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+        .progress-bar { background: linear-gradient(90deg, #22c55e, #16a34a); height: 100%; transition: width 0.3s; }
+        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px; border-radius: 50px; z-index: 1000; animation: slideDown 0.3s ease; }
+        .notification.success { background: #22c55e; color: #000; }
+        .notification.error { background: #ef4444; color: #fff; }
+        @keyframes slideDown { from { transform: translateX(-50%) translateY(-100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #1a1a1a; border-radius: 15px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .close-btn { float: right; font-size: 2rem; cursor: pointer; color: #999; }
+        .close-btn:hover { color: #22c55e; }
+        .empty-state { text-align: center; padding: 40px; color: #999; }
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; background: #333; color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        .tab-btn.active { background: #22c55e; color: #000; }
     </style>
 </head>
-<body class="bg-neutral-950 text-neutral-100 font-sans selection:bg-green-500 selection:text-white pb-12">
-    
-    <div id="root"></div>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🦍 Gorillat Share</h1>
+            <p class="subtitle">Partage de vidéos 4K gratuit • Lien unique</p>
+        </header>
 
-    <script type="text/babel">
-        // --- TA CONFIGURATION FIREBASE ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyC-c3lsOdCM--I0wlZBuN2fNeH_2DqxGdY",
-            authDomain: "gorillat-shart.firebaseapp.com",
-            projectId: "gorillat-shart",
-            storageBucket: "gorillat-shart.firebasestorage.app",
-            messagingSenderId: "98642718505",
-            appId: "1:98642718505:web:d5d0b5ac7715f3c89ed138"
-        };
+        <!-- Upload Section -->
+        <section>
+            <h2>📤 Envoyer des Vidéos</h2>
+            
+            <div class="form-row">
+                <div>
+                    <label>Qui envoie ?</label>
+                    <input type="text" id="uploaderName" placeholder="Ex: Gorillat" maxlength="50">
+                </div>
+                <div>
+                    <label>Type de vidéo</label>
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="setVideoType('brute')">📹 Brutes</button>
+                        <button class="tab-btn" onclick="setVideoType('montee')">✨ Finale</button>
+                    </div>
+                </div>
+            </div>
 
-        // Initialisation de Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+            <div>
+                <label>Titre du lot</label>
+                <input type="text" id="videoTitle" placeholder="Ex: TROLL EN LOBBY" maxlength="100">
+            </div>
+
+            <div id="thumbnailSection" style="display: none;">
+                <label>Miniature (Optionnel)</label>
+                <input type="file" id="thumbnailFile" accept="image/*" onchange="handleThumbnailSelect(event)">
+                <button type="button" onclick="document.getElementById('thumbnailFile').click()" class="btn-secondary">🖼️ Ajouter une miniature</button>
+                <div id="thumbnailPreview" style="margin-top: 10px;"></div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <label>Vidéos</label>
+                <div class="upload-box" id="uploadBox" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('videoFiles').click()">
+                    <div class="icon-big">🎬</div>
+                    <p>Glisse tes vidéos ici ou clique</p>
+                    <p style="font-size: 0.9rem; color: #999; margin-top: 10px;">Ou sélectionne plusieurs fichiers</p>
+                </div>
+                <input type="file" id="videoFiles" multiple accept="video/*" onchange="handleFileSelect(event)">
+            </div>
+
+            <div id="filesList" style="margin-top: 15px;"></div>
+
+            <div id="progressContainer" style="display: none; margin-top: 20px;">
+                <p id="uploadStatus" style="margin-bottom: 10px;">Préparation...</p>
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                </div>
+                <p id="progressPercent" style="text-align: center; color: #999;">0%</p>
+            </div>
+
+            <div class="button-group" style="margin-top: 20px;">
+                <button onclick="uploadVideos()" id="uploadBtn">✅ Envoyer les vidéos</button>
+                <button class="btn-secondary" onclick="clearFiles()">🗑️ Effacer</button>
+            </div>
+        </section>
+
+        <!-- Videos Display -->
+        <section id="videosSection" style="display: none;">
+            <h2>🎞️ Vidéos Brutes</h2>
+            <div id="bruteVideosList" class="video-grid"></div>
+        </section>
+
+        <section id="finishedSection" style="display: none;">
+            <h2>✅ Vidéos Finales</h2>
+            <div id="finishedVideosList" class="video-grid"></div>
+        </section>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Video Detail Modal -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeVideoModal()">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <p id="modalInfo" style="color: #999; margin: 15px 0;"></p>
+            <a id="downloadLink" href="#" target="_blank" class="button-group">
+                <button style="width: 100%;">⬇️ Télécharger</button>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://gorillat-share-api.vercel.app'; // Tu peux utiliser Supabase aussi
+        let selectedFiles = [];
+        let videoType = 'brute';
+        let thumbnailData = null;
+
+        // Set video type
+        function setVideoType(type) {
+            videoType = type;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('thumbnailSection').style.display = type === 'montee' ? 'block' : 'none';
         }
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const collectionName = 'gorillat_share_videos';
 
-        // Outils React
-        const { useState, useEffect, useRef } = React;
+        // Handle file selection
+        function handleFileSelect(e) {
+            selectedFiles = Array.from(e.target.files);
+            updateFilesList();
+        }
 
-        function App() {
-            const [user, setUser] = useState(null);
-            const [videos, setVideos] = useState([]);
-            const [loading, setLoading] = useState(true);
-            const [notification, setNotification] = useState({ show: false, message: '', type: 'error' });
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('uploadBox').classList.add('dragover');
+        }
 
-            const [uploaderName, setUploaderName] = useState('');
-            const [videoTitle, setVideoTitle] = useState('');
-            const [videoType, setVideoType] = useState('brute');
-            const [selectedFiles, setSelectedFiles] = useState([]);
-            const [thumbnailData, setThumbnailData] = useState(null);
-            
-            const [isUploading, setIsUploading] = useState(false);
-            const [uploadProgress, setUploadProgress] = useState(0);
-            const [uploadStatus, setUploadStatus] = useState('');
-            const [isDragging, setIsDragging] = useState(false);
-            const [selectedVideo, setSelectedVideo] = useState(null);
+        function handleDragLeave(e) {
+            document.getElementById('uploadBox').classList.remove('dragover');
+        }
 
-            const fileInputRef = useRef(null);
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('uploadBox').classList.remove('dragover');
+            selectedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
+            updateFilesList();
+        }
 
-            // Connexion invisible
-            useEffect(() => {
-                auth.signInAnonymously().catch((err) => {
-                    console.error("Erreur Firebase:", err);
-                    showNotification("Erreur de connexion à Firebase. Vérifie les règles Firestore !", "error");
-                });
+        function updateFilesList() {
+            const list = document.getElementById('filesList');
+            if (selectedFiles.length === 0) {
+                list.innerHTML = '';
+                return;
+            }
+            list.innerHTML = `
+                <p style="color: #999; margin-bottom: 10px;">📹 ${selectedFiles.length} fichier(s) sélectionné(s):</p>
+                <div style="background: #0a0a0a; border-radius: 8px; padding: 10px; max-height: 200px; overflow-y: auto;">
+                    ${selectedFiles.map((f, i) => `
+                        <div style="display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333;">
+                            <span style="font-size: 0.9rem; color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f.name}</span>
+                            <button onclick="removeFile(${i})" class="btn-secondary" style="padding: 2px 8px; font-size: 0.8rem;">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFilesList();
+        }
+
+        function clearFiles() {
+            selectedFiles = [];
+            document.getElementById('videoFiles').value = '';
+            updateFilesList();
+        }
+
+        function handleThumbnailSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                thumbnailData = evt.target.result;
+                document.getElementById('thumbnailPreview').innerHTML = `
+                    <img src="${thumbnailData}" style="max-width: 150px; max-height: 100px; border-radius: 8px; border: 1px solid #333;">
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Upload to GoFile
+        async function uploadToGofile(files) {
+            try {
+                const serverRes = await fetch('https://api.gofile.io/servers');
+                const serverData = await serverRes.json();
+                if (serverData.status !== 'ok') throw new Error('Serveurs indisponibles');
                 
-                const unsubscribe = auth.onAuthStateChanged(setUser);
-                return () => unsubscribe();
-            }, []);
+                const server = serverData.data.servers[0].name;
+                let folderId = null;
+                let downloadLink = null;
 
-            // Récupération des vidéos
-            useEffect(() => {
-                if (!user) return;
-                
-                const unsubscribe = db.collection(collectionName).onSnapshot((snapshot) => {
-                    const vids = [];
-                    snapshot.forEach((doc) => {
-                        vids.push({ id: doc.id, ...doc.data() });
-                    });
-                    vids.sort((a, b) => {
-                        const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
-                        const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
-                        return timeB - timeA;
-                    });
-                    setVideos(vids);
-                    setLoading(false);
-                }, (err) => {
-                    console.error("Erreur Firestore:", err);
-                    showNotification("Impossible de charger les vidéos.", "error");
-                    setLoading(false);
-                });
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    updateProgress((i / files.length) * 100, `Envoi ${i + 1}/${files.length}...`);
 
-                return () => unsubscribe();
-            }, [user]);
-
-            const showNotification = (message, type = 'error') => {
-                setNotification({ show: true, message, type });
-                setTimeout(() => setNotification({ show: false, message: '', type: 'error' }), 6000);
-            };
-
-            const processFiles = (filesArray) => {
-                if (selectedFiles.length + filesArray.length > 40) {
-                    showNotification("⚠️ Limite atteinte : Tu ne peux pas envoyer plus de 40 vidéos à la fois.", "error");
-                    const allowedFiles = filesArray.slice(0, 40 - selectedFiles.length);
-                    setSelectedFiles(prev => [...prev, ...allowedFiles]);
-                    return;
-                }
-                setSelectedFiles(prev => [...prev, ...filesArray]);
-            };
-
-            const handleFileSelection = (e) => {
-                if (e.target.files.length > 0) {
-                    processFiles(Array.from(e.target.files));
-                    e.target.value = ''; 
-                }
-            };
-
-            const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
-            const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
-            const handleDrop = (e) => {
-                e.preventDefault();
-                setIsDragging(false);
-                const droppedFiles = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('video/'));
-                processFiles(droppedFiles);
-            };
-            
-            const removeFile = (indexToRemove) => setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
-
-            const handleThumbnailChange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const MAX_WIDTH = 500;
-                        const scaleSize = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scaleSize;
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        setThumbnailData(canvas.toDataURL('image/jpeg', 0.8));
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            };
-
-            const uploadToGofile = (file, server, folderId = null) => {
-                return new Promise((resolve, reject) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', `https://${server}.gofile.io/uploadFile`);
-                    
-                    xhr.upload.onprogress = (e) => {
-                        if (e.lengthComputable) setUploadProgress((e.loaded / e.total) * 100);
-                    };
-                    
-                    xhr.onload = () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            try {
-                                const res = JSON.parse(xhr.responseText);
-                                if (res.status === 'ok') resolve(res.data);
-                                else reject(new Error("L'API Gofile a refusé l'envoi."));
-                            } catch(e) { reject(e); }
-                        } else {
-                            reject(new Error("Erreur serveur Gofile"));
-                        }
-                    };
-                    
-                    xhr.onerror = () => reject(new Error("Erreur réseau. Désactive ton bloqueur de pub."));
-                    
                     const formData = new FormData();
                     formData.append('file', file);
                     if (folderId) formData.append('folderId', folderId);
-                    xhr.send(formData);
-                });
-            };
 
-            const handleUpload = async (e) => {
-                e.preventDefault();
-                if (!uploaderName || !videoTitle || selectedFiles.length === 0) {
-                    showNotification("Veuillez remplir le nom, le titre et ajouter au moins une vidéo.", "error");
-                    return;
-                }
-                if (!user) {
-                    showNotification("Erreur: Non connecté. Recharge la page.", "error");
-                    return;
-                }
-
-                setIsUploading(true);
-                setUploadProgress(0);
-
-                try {
-                    setUploadStatus("Recherche d'un serveur gratuit...");
-                    const serverRes = await fetch('https://api.gofile.io/servers');
-                    const serverData = await serverRes.json();
-                    
-                    if (serverData.status !== 'ok') throw new Error("Serveurs indisponibles.");
-                    const serverName = serverData.data.servers[0].name;
-
-                    let currentFolderId = null;
-                    let finalDownloadLink = null;
-                    const uploadedFilesNames = [];
-
-                    for (let i = 0; i < selectedFiles.length; i++) {
-                        const file = selectedFiles[i];
-                        setUploadStatus(`Envoi vidéo ${i + 1}/${selectedFiles.length}... Ne quitte pas la page !`);
-                        setUploadProgress(0); 
-                        
-                        const data = await uploadToGofile(file, serverName, currentFolderId);
-                        
-                        if (i === 0) {
-                            currentFolderId = data.parentFolder;
-                            finalDownloadLink = data.downloadPage;
-                        }
-                        
-                        uploadedFilesNames.push(file.name);
-                    }
-
-                    setUploadStatus("Sauvegarde dans la base de données...");
-                    setUploadProgress(100);
-
-                    await db.collection(collectionName).add({
-                        title: videoTitle,
-                        uploader: uploaderName,
-                        type: videoType,
-                        filesCount: selectedFiles.length,
-                        fileNames: uploadedFilesNames,
-                        downloadLink: finalDownloadLink,
-                        thumbnailData: videoType === 'montee' ? thumbnailData : null,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    const res = await fetch(`https://${server}.gofile.io/uploadFile`, {
+                        method: 'POST',
+                        body: formData
                     });
 
-                    setVideoTitle('');
-                    setSelectedFiles([]);
-                    setThumbnailData(null);
-                    setIsUploading(false);
-                    showNotification("✅ Vidéos envoyées avec succès !", "success");
-                    
-                } catch (err) {
-                    showNotification(`❌ L'envoi a échoué: ${err.message}`, "error");
-                    setIsUploading(false);
+                    const data = await res.json();
+                    if (data.status !== 'ok') throw new Error('Upload échoué');
+
+                    if (i === 0) {
+                        folderId = data.data.parentFolder;
+                        downloadLink = data.data.downloadPage;
+                    }
                 }
-            };
 
-            const videosBrutes = videos.filter(v => v.type === 'brute');
-            const videosMontees = videos.filter(v => v.type === 'montee');
-
-            return (
-                <React.Fragment>
-                    {notification.show && (
-                        <div className={`fixed top-5 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-full flex items-center shadow-2xl transition-all w-11/12 max-w-md ${notification.type === 'error' ? 'bg-red-600' : 'bg-green-600'}`}>
-                            <i className={`ph-fill ${notification.type === 'error' ? 'ph-warning-circle' : 'ph-check-circle'} text-2xl mr-3 shrink-0`}></i>
-                            <span className="font-medium text-sm leading-tight">{notification.message}</span>
-                        </div>
-                    )}
-
-                    <header className="bg-gradient-to-r from-green-900 to-neutral-900 border-b border-green-800/50 shadow-lg shadow-green-900/20 py-4 px-4 md:px-8 flex items-center justify-between sticky top-0 z-50">
-                        <div className="flex items-center space-x-3">
-                            <div className="bg-green-500 p-2 rounded-xl shadow-[0_0_15px_rgba(34,197,94,0.5)]">
-                                <i className="ph-fill ph-play-circle text-3xl text-black"></i>
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-extrabold tracking-tight text-white uppercase">Gorillat <span className="text-green-500">Share</span></h1>
-                                <p className="text-xs text-green-300 font-medium tracking-wider">Lien Unique • En Ligne</p>
-                            </div>
-                        </div>
-                    </header>
-
-                    <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-10">
-                        <div className="bg-blue-500/10 border border-blue-500/30 text-blue-400 p-4 rounded-2xl text-sm flex items-start">
-                            <i className="ph-fill ph-info text-2xl mr-3 shrink-0 mt-0.5"></i>
-                            <div>
-                                <strong className="block text-base mb-1">📱 Astuce de sélection :</strong>
-                                Sur téléphone, <b>reste appuyé longtemps</b> sur la première vidéo dans ta galerie, puis coche les autres. Le site créera <b>un seul lien</b> pour toutes les télécharger d'un coup !
-                            </div>
-                        </div>
-
-                        <section className="bg-neutral-900 rounded-3xl border border-neutral-800 p-6 md:p-8 shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
-                            
-                            <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center">
-                                <i className="ph-fill ph-cloud-arrow-up text-2xl mr-3 text-green-500"></i>
-                                Envoyer des vidéos
-                            </h2>
-
-                            <form onSubmit={handleUpload} className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
-                                <div className="space-y-5">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-neutral-400 mb-1">Qui envoie ?</label>
-                                            <input type="text" value={uploaderName} onChange={(e) => setUploaderName(e.target.value)} placeholder="Ex: Gorillat" className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-all" disabled={isUploading} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-neutral-400 mb-1">Type de vidéo</label>
-                                            <div className="flex bg-neutral-950 p-1 rounded-xl border border-neutral-800 h-[50px]">
-                                                <button type="button" onClick={() => setVideoType('brute')} className={`flex-1 text-sm font-semibold rounded-lg transition-all ${videoType === 'brute' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-white'}`}>Brutes</button>
-                                                <button type="button" onClick={() => setVideoType('montee')} className={`flex-1 text-sm font-semibold rounded-lg transition-all ${videoType === 'montee' ? 'bg-green-600 text-white' : 'text-neutral-500 hover:text-white'}`}>Finale</button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-neutral-400 mb-1">Titre du lot</label>
-                                        <input type="text" value={videoTitle} onChange={(e) => setVideoTitle(e.target.value)} placeholder="Ex: TROLL EN LOBBY" className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-all" disabled={isUploading} />
-                                    </div>
-
-                                    {videoType === 'montee' && (
-                                        <div className="p-4 bg-neutral-950/50 border border-neutral-800 rounded-xl">
-                                            <label className="block text-sm font-medium text-neutral-400 mb-2 flex items-center">
-                                                <i className="ph-fill ph-image text-lg mr-2 text-green-500"></i>
-                                                Miniature (Optionnel)
-                                            </label>
-                                            <div className="flex items-center space-x-4">
-                                                {thumbnailData && <img src={thumbnailData} alt="Miniature" className="w-24 h-[54px] object-cover rounded-lg border border-neutral-700" />}
-                                                <label className="bg-neutral-800 hover:bg-neutral-700 text-white px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm font-medium">
-                                                    {thumbnailData ? 'Changer' : 'Ajouter une image'}
-                                                    <input type="file" accept="image/*" className="hidden" onChange={handleThumbnailChange} disabled={isUploading} />
-                                                </label>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="space-y-4 flex flex-col h-full">
-                                    <div 
-                                        className={`border-2 border-dashed rounded-2xl flex flex-col p-4 flex-1 transition-all min-h-[220px] ${isDragging ? 'border-green-500 bg-green-500/10' : 'border-neutral-700 bg-neutral-950 hover:border-neutral-600'} ${selectedFiles.length > 0 ? 'justify-start' : 'justify-center items-center cursor-pointer'}`}
-                                        onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-                                        onClick={() => selectedFiles.length === 0 && fileInputRef.current.click()}
-                                    >
-                                        {selectedFiles.length > 0 ? (
-                                            <div className="w-full h-full flex flex-col">
-                                                <p className="text-sm font-medium text-neutral-400 mb-3">📹 {selectedFiles.length} vidéo{selectedFiles.length > 1 ? 's' : ''} sélectionnée{selectedFiles.length > 1 ? 's' : ''}</p>
-                                                <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar">
-                                                    {selectedFiles.map((file, index) => (
-                                                        <div key={index} className="flex items-center justify-between bg-neutral-800/50 p-2 rounded-lg text-xs">
-                                                            <span className="truncate text-neutral-300">{file.name}</span>
-                                                            <button type="button" onClick={() => removeFile(index)} className="text-red-500 hover:text-red-400 ml-2">✕</button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="text-center">
-                                                <i className="ph-fill ph-cloud-arrow-up text-5xl text-neutral-600 mb-3"></i>
-                                                <p className="text-neutral-400 font-medium">Glisse tes vidéos ici</p>
-                                                <p className="text-xs text-neutral-500 mt-1">Ou clique pour explorer</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <input ref={fileInputRef} type="file" multiple accept="video/*" onChange={handleFileSelection} className="hidden" disabled={isUploading} />
-
-                                    {isUploading && (
-                                        <div className="space-y-2">
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="text-neutral-400">{uploadStatus}</span>
-                                                <span className="text-green-500 font-bold">{Math.round(uploadProgress)}%</span>
-                                            </div>
-                                            <div className="w-full bg-neutral-800 rounded-full h-2 overflow-hidden">
-                                                <div className="bg-gradient-to-r from-green-500 to-green-400 h-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <button type="submit" disabled={isUploading || selectedFiles.length === 0} className={`w-full py-3 rounded-xl font-bold text-white transition-all flex items-center justify-center space-x-2 ${isUploading || selectedFiles.length === 0 ? 'bg-neutral-700 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 active:scale-95'}`}>
-                                        <i className={`ph-fill ${isUploading ? 'ph-spinner animate-spin' : 'ph-cloud-arrow-up'} text-xl`}></i>
-                                        <span>{isUploading ? 'Envoi en cours...' : 'Envoyer'}</span>
-                                    </button>
-                                </div>
-                            </form>
-                        </section>
-
-                        {loading ? (
-                            <div className="text-center py-12">
-                                <i className="ph-fill ph-spinner text-5xl text-green-500 animate-spin"></i>
-                                <p className="text-neutral-400 mt-4">Chargement des vidéos...</p>
-                            </div>
-                        ) : (
-                            <>
-                                {videosBrutes.length > 0 && (
-                                    <section className="bg-neutral-900 rounded-3xl border border-neutral-800 p-6 md:p-8">
-                                        <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center">
-                                            <i className="ph-fill ph-film-slate text-2xl mr-3 text-blue-500"></i>
-                                            Vidéos Brutes à Monter ({videosBrutes.length})
-                                        </h2>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {videosBrutes.map(video => (
-                                                <div key={video.id} onClick={() => setSelectedVideo(video)} className="bg-neutral-800/50 hover:bg-neutral-800 rounded-xl p-4 cursor-pointer transition-all border border-neutral-700 hover:border-blue-500/50">
-                                                    <div className="flex items-start justify-between mb-2">
-                                                        <h3 className="font-bold text-white flex-1 line-clamp-2">{video.title}</h3>
-                                                        <span className="text-xs bg-blue-600/30 text-blue-300 px-2 py-1 rounded ml-2 shrink-0">BRUTE</span>
-                                                    </div>
-                                                    <p className="text-xs text-neutral-400">📤 {video.uploader}</p>
-                                                    <p className="text-xs text-neutral-500 mt-1">📹 {video.filesCount} fichier{video.filesCount > 1 ? 's' : ''}</p>
-                                                    {video.createdAt && <p className="text-xs text-neutral-600 mt-2">{new Date(video.createdAt.toMillis()).toLocaleDateString('fr-FR')}</p>}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </section>
-                                )}
-
-                                {videosMontees.length > 0 && (
-                                    <section className="bg-neutral-900 rounded-3xl border border-neutral-800 p-6 md:p-8">
-                                        <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center">
-                                            <i className="ph-fill ph-sparkle text-2xl mr-3 text-green-500"></i>
-                                            Vidéos Finales ({videosMontees.length})
-                                        </h2>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {videosMontees.map(video => (
-                                                <div key={video.id} onClick={() => setSelectedVideo(video)} className="bg-neutral-800/50 hover:bg-neutral-800 rounded-xl overflow-hidden cursor-pointer transition-all border border-neutral-700 hover:border-green-500/50 group">
-                                                    {video.thumbnailData ? (
-                                                        <img src={video.thumbnailData} alt={video.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform" />
-                                                    ) : (
-                                                        <div className="w-full h-40 bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center group-hover:scale-105 transition-transform">
-                                                            <i className="ph-fill ph-play-circle text-6xl text-white/30"></i>
-                                                        </div>
-                                                    )}
-                                                    <div className="p-4">
-                                                        <div className="flex items-start justify-between mb-2">
-                                                            <h3 className="font-bold text-white flex-1 line-clamp-2">{video.title}</h3>
-                                                            <span className="text-xs bg-green-600/30 text-green-300 px-2 py-1 rounded ml-2 shrink-0">FINALE</span>
-                                                        </div>
-                                                        <p className="text-xs text-neutral-400">✨ {video.uploader}</p>
-                                                        <p className="text-xs text-neutral-500 mt-1">📹 {video.filesCount} fichier{video.filesCount > 1 ? 's' : ''}</p>
-                                                        {video.createdAt && <p className="text-xs text-neutral-600 mt-2">{new Date(video.createdAt.toMillis()).toLocaleDateString('fr-FR')}</p>}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </section>
-                                )}
-
-                                {videosBrutes.length === 0 && videosMontees.length === 0 && (
-                                    <div className="text-center py-12 bg-neutral-900 rounded-3xl border border-neutral-800">
-                                        <i className="ph-fill ph-video text-6xl text-neutral-700 mb-4"></i>
-                                        <p className="text-neutral-400 text-lg">Aucune vidéo pour le moment</p>
-                                        <p className="text-neutral-500 text-sm mt-2">Commence par en envoyer une ! 🚀</p>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </main>
-
-                    {selectedVideo && (
-                        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setSelectedVideo(null)}>
-                            <div className="bg-neutral-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-neutral-800" onClick={(e) => e.stopPropagation()}>
-                                <div className="sticky top-0 flex items-center justify-between p-6 bg-neutral-950 border-b border-neutral-800">
-                                    <h3 className="font-bold text-lg text-white flex-1">{selectedVideo.title}</h3>
-                                    <button onClick={() => setSelectedVideo(null)} className="text-neutral-400 hover:text-white text-2xl">✕</button>
-                                </div>
-                                <div className="p-6 space-y-4">
-                                    {selectedVideo.thumbnailData && (
-                                        <img src={selectedVideo.thumbnailData} alt={selectedVideo.title} className="w-full rounded-xl" />
-                                    )}
-                                    <div className="space-y-2 text-sm">
-                                        <p><strong className="text-neutral-300">Titre:</strong> <span className="text-neutral-400">{selectedVideo.title}</span></p>
-                                        <p><strong className="text-neutral-300">Type:</strong> <span className={`${selectedVideo.type === 'montee' ? 'text-green-400' : 'text-blue-400'}`}>{selectedVideo.type === 'montee' ? '✨ Finale' : '📹 Brute'}</span></p>
-                                        <p><strong className="text-neutral-300">Envoyé par:</strong> <span className="text-neutral-400">{selectedVideo.uploader}</span></p>
-                                        <p><strong className="text-neutral-300">Fichiers:</strong> <span className="text-neutral-400">{selectedVideo.filesCount}</span></p>
-                                        {selectedVideo.createdAt && <p><strong className="text-neutral-300">Date:</strong> <span className="text-neutral-400">{new Date(selectedVideo.createdAt.toMillis()).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span></p>}
-                                    </div>
-                                    <a href={selectedVideo.downloadLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-4 rounded-xl text-center transition-colors flex items-center justify-center space-x-2">
-                                        <i className="ph-fill ph-download text-xl"></i>
-                                        <span>Télécharger</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </React.Fragment>
-            );
+                updateProgress(100, 'Finalisation...');
+                return downloadLink;
+            } catch (err) {
+                showNotification('Erreur upload: ' + err.message, 'error');
+                throw err;
+            }
         }
 
-        // Rendu de l'app
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Main upload function
+        async function uploadVideos() {
+            const name = document.getElementById('uploaderName').value.trim();
+            const title = document.getElementById('videoTitle').value.trim();
+
+            if (!name || !title || selectedFiles.length === 0) {
+                showNotification('Remplissez tous les champs', 'error');
+                return;
+            }
+
+            document.getElementById('uploadBtn').disabled = true;
+            document.getElementById('progressContainer').style.display = 'block';
+
+            try {
+                const downloadLink = await uploadToGofile(selectedFiles);
+
+                // Save to localStorage for demo (En production: utilise Firebase/Supabase)
+                const videos = JSON.parse(localStorage.getItem('gorillat_videos') || '[]');
+                videos.push({
+                    id: Date.now(),
+                    title,
+                    uploader: name,
+                    type: videoType,
+                    downloadLink,
+                    thumbnail: thumbnailData,
+                    date: new Date().toLocaleDateString('fr-FR'),
+                    fileCount: selectedFiles.length
+                });
+                localStorage.setItem('gorillat_videos', JSON.stringify(videos));
+
+                showNotification('✅ Vidéos envoyées avec succès!', 'success');
+                clearFiles();
+                document.getElementById('uploaderName').value = '';
+                document.getElementById('videoTitle').value = '';
+                thumbnailData = null;
+                document.getElementById('thumbnailPreview').innerHTML = '';
+                loadVideos();
+
+            } catch (err) {
+                showNotification('Erreur: ' + err.message, 'error');
+            } finally {
+                document.getElementById('uploadBtn').disabled = false;
+                document.getElementById('progressContainer').style.display = 'none';
+            }
+        }
+
+        // Load and display videos
+        function loadVideos() {
+            const videos = JSON.parse(localStorage.getItem('gorillat_videos') || '[]');
+            const brute = videos.filter(v => v.type === 'brute');
+            const montee = videos.filter(v => v.type === 'montee');
+
+            if (brute.length > 0) {
+                document.getElementById('videosSection').style.display = 'block';
+                document.getElementById('bruteVideosList').innerHTML = brute.map(v => `
+                    <div class="video-card" onclick="openVideoModal(${v.id})">
+                        <h3>${v.title}</h3>
+                        <p class="video-meta">📤 ${v.uploader}</p>
+                        <p class="video-meta">📅 ${v.date}</p>
+                        <p class="video-meta">📹 ${v.fileCount} fichier(s)</p>
+                        <span class="badge blue">BRUTE</span>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('videosSection').style.display = 'none';
+            }
+
+            if (montee.length > 0) {
+                document.getElementById('finishedSection').style.display = 'block';
+                document.getElementById('finishedVideosList').innerHTML = montee.map(v => `
+                    <div class="video-card" onclick="openVideoModal(${v.id})">
+                        ${v.thumbnail ? `<img src="${v.thumbnail}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">` : ''}
+                        <h3>${v.title}</h3>
+                        <p class="video-meta">✨ ${v.uploader}</p>
+                        <p class="video-meta">📅 ${v.date}</p>
+                        <p class="video-meta">📹 ${v.fileCount} fichier(s)</p>
+                        <span class="badge green">FINALE</span>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('finishedSection').style.display = 'none';
+            }
+        }
+
+        function openVideoModal(id) {
+            const videos = JSON.parse(localStorage.getItem('gorillat_videos') || '[]');
+            const video = videos.find(v => v.id === id);
+            if (!video) return;
+
+            document.getElementById('modalTitle').textContent = video.title;
+            document.getElementById('modalInfo').innerHTML = `
+                <strong>Type:</strong> ${video.type === 'montee' ? '✨ Finale' : '📹 Brute'}<br>
+                <strong>Par:</strong> ${video.uploader}<br>
+                <strong>Fichiers:</strong> ${video.fileCount}<br>
+                <strong>Date:</strong> ${video.date}
+            `;
+            document.getElementById('downloadLink').href = video.downloadLink;
+            document.getElementById('videoModal').classList.add('active');
+        }
+
+        function closeVideoModal() {
+            document.getElementById('videoModal').classList.remove('active');
+        }
+
+        function updateProgress(percent, status) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
+            document.getElementById('uploadStatus').textContent = status;
+        }
+
+        function showNotification(message, type) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.className = `notification ${type}`;
+            setTimeout(() => notif.className = 'notification', 5000);
+        }
+
+        // Load videos on page load
+        loadVideos();
     </script>
 </body>
 </html>
