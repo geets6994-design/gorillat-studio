@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gorillat Studio - Partage de Vidéos 4K</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🦍 Gorillat Studio</h1>
+                <p>Partage de vidéos 4K - Sans connexion requise</p>
+            </div>
+            <button class="auth-btn" onclick="openAuthModal()">👤 Connexion (Optionnel)</button>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <h2>📤 Envoyer une Vidéo en Cours</h2>
+                <div class="upload-box" onclick="document.getElementById('videoInput').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+                    <div class="upload-icon">🎬</div>
+                    <p>Cliquez ou déposez votre vidéo ici</p>
+                    <span class="upload-info">4K/1080p • Gratuit • Sans inscription</span>
+                </div>
+                <input type="file" id="videoInput" accept="video/*" hidden onchange="handleVideoSelect(event)">
+
+                <div id="uploadForm" class="upload-form" style="display: none;">
+                    <input type="text" id="videoTitle" placeholder="Titre de la vidéo" maxlength="100">
+                    <input type="text" id="uploaderName" placeholder="Votre nom (requis)" maxlength="50">
+                    <button onclick="uploadVideo()" class="btn-primary">Envoyer la Vidéo</button>
+                    <button onclick="cancelUpload()" class="btn-secondary">Annuler</button>
+                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                        <div class="progress-bar"></div>
+                        <span id="progressText">0%</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Videos In Progress -->
+            <section class="videos-section">
+                <h2>🎞️ Vidéos en Cours (À Monter)</h2>
+                <div class="videos-grid" id="videosGrid">
+                    <div class="empty-state">Aucune vidéo en cours. Commencez par en envoyer une !</div>
+                </div>
+            </section>
+
+            <!-- Finished Videos Section -->
+            <section class="finished-videos-section">
+                <h2>✅ Vidéos Finales (Montées)</h2>
+                <div id="finishedVideosContainer" style="display: none;">
+                    <button class="btn-primary" onclick="openFinishedVideoModal()">➕ Ajouter une Vidéo Finale</button>
+                    <div class="finished-videos-grid" id="finishedVideosGrid"></div>
+                </div>
+                <div id="finishedEmptyState" class="empty-state">
+                    Connectez-vous pour ajouter les vidéos finales montées
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAuthModal()">&times;</span>
+            <h2>Connexion - Gorillat Studio</h2>
+            <p>Connectez-vous pour publier les vidéos finales et gérer votre contenu</p>
+            
+            <input type="text" id="authUsername" placeholder="Nom d'utilisateur" maxlength="50">
+            <input type="password" id="authPassword" placeholder="Mot de passe" maxlength="100">
+            
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="switchAuthTab('login')">Connexion</button>
+                <button class="tab-btn" onclick="switchAuthTab('register')">Inscription</button>
+            </div>
+
+            <button class="btn-primary" onclick="authenticate()">Connexion</button>
+            <button class="btn-secondary" onclick="closeAuthModal()">Annuler</button>
+            <p id="authMessage"></p>
+        </div>
+    </div>
+
+    <!-- Finished Video Modal -->
+    <div id="finishedVideoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeFinishedVideoModal()">&times;</span>
+            <h2>Ajouter une Vidéo Finale</h2>
+            
+            <div class="upload-box-modal" onclick="document.getElementById('finishedVideoInput').click()" ondrop="handleFinishedVideoDrop(event)" ondragover="handleDragOver(event)">
+                <div class="upload-icon">🎥</div>
+                <p>Cliquez ou déposez la vidéo montée ici</p>
+            </div>
+            <input type="file" id="finishedVideoInput" accept="video/*" hidden onchange="handleFinishedVideoSelect(event)">
+
+            <input type="text" id="finishedVideoTitle" placeholder="Titre de la vidéo finale" maxlength="100">
+            <input type="text" id="finishedVideoDescription" placeholder="Description (optionnel)" maxlength="500">
+            
+            <!-- Thumbnail Upload -->
+            <div class="thumbnail-section">
+                <h3>🖼️ Miniature</h3>
+                <div class="upload-box-modal" onclick="document.getElementById('thumbnailInput').click()" ondrop="handleThumbnailDrop(event)" ondragover="handleDragOver(event)">
+                    <div class="upload-icon">🖼️</div>
+                    <p>Cliquez ou déposez la miniature ici</p>
+                </div>
+                <input type="file" id="thumbnailInput" accept="image/*" hidden onchange="handleThumbnailSelect(event)">
+                <div id="thumbnailPreview"></div>
+            </div>
+
+            <button class="btn-primary" onclick="uploadFinishedVideo()">Publier la Vidéo Finale</button>
+            <button class="btn-secondary" onclick="closeFinishedVideoModal()">Annuler</button>
+            <div class="upload-progress" id="finishedUploadProgress" style="display: none;">
+                <div class="progress-bar"></div>
+                <span id="finishedProgressText">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Detail Modal -->
+    <div id="videoDetailModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeVideoDetailModal()">&times;</span>
+            <div class="video-detail-content">
+                <video id="detailVideo" controls></video>
+                <div class="video-details">
+                    <h2 id="detailTitle"></h2>
+                    <p id="detailUploader"></p>
+                    <p id="detailDate"></p>
+                    <button class="btn-primary" onclick="downloadVideo()">⬇️ Télécharger</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
